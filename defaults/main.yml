@@ -1,0 +1,45 @@
+# @var seaweedfs_actions:description: >
+# List of actions the role does, accepts one or more actions.
+# Use comma without spaces as a delimiter for multiple actions.
+# @var seaweedfs_actions:required: `true`
+# @var seaweedfs_actions:type: String
+# @var seaweedfs_actions:example: >
+#   seaweedfs_actions: install
+# @end
+
+# @var seaweedfs_version:description: SeaweedFS release version to install (without leading "v")
+# @var seaweedfs_version:type: String
+# @end
+seaweedfs_version: 4.38
+
+# @var seaweedfs_download_base:description: Base URL to download installation artifacts
+# @var seaweedfs_download_base:type: String
+# @end
+seaweedfs_download_base: https://github.com/seaweedfs/seaweedfs/releases/download
+
+# @var seaweedfs_download_dir:description: Destination directory for downloading the seaweedfs binary archive
+# @var seaweedfs_download_dir:type: String
+# @end
+seaweedfs_download_dir: /tmp
+
+# @var seaweedfs_bin_dir:description: PATH directory for the installed weed binary
+# @var seaweedfs_bin_dir:type: String
+# @end
+seaweedfs_bin_dir: /usr/local/bin
+
+# @var seaweedfs_user:description: >
+# Linux user name to own seaweedfs directories and run the weed process.
+# Must already exist on the target host (e.g. provisioned via the linux_user role).
+# @var seaweedfs_user:type: String
+# @end
+seaweedfs_user: seaweedfs
+
+# @var seaweedfs_dir:description: Base directory for seaweedfs data and configuration
+# @var seaweedfs_dir:type: String
+# @end
+seaweedfs_dir: /var/lib/seaweedfs
+
+# @var seaweedfs_data_path:description: Directory where seaweedfs stores volume/master data
+# @var seaweedfs_data_path:type: String
+# @end
+seaweedfs_data_path: /var/lib/seaweedfs/data

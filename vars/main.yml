@@ -1,0 +1,4 @@
+seaweedfs_supported_actions:
+  - install
+
+seaweedfs_download_url: "{{ seaweedfs_download_base }}/{{ seaweedfs_version }}/linux_amd64.tar.gz"

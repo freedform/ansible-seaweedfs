@@ -1,0 +1,7 @@
+galaxy_info:
+  author: freedform
+  description: Installs and manages SeaweedFS
+  min_ansible_version: "2.20"
+  license: MIT
+
+dependencies: []

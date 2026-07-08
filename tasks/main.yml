@@ -1,0 +1,17 @@
+---
+- name: Create seaweedfs_action_list
+  ansible.builtin.set_fact:
+    seaweedfs_action_list: "{{ (seaweedfs_actions | default('')).split(',') | reject('equalto', '') | list }}"
+
+- name: Validate seaweedfs_action_list
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_action_list | length > 0
+      - seaweedfs_action_list | difference(seaweedfs_supported_actions) | length == 0
+    fail_msg: "seaweedfs_actions must be set to one or more of: {{ seaweedfs_supported_actions | join(', ') }}"
+
+- name: Deploy seaweedfs
+  ansible.builtin.include_tasks: "{{ task_name }}.yml"
+  loop: "{{ seaweedfs_action_list }}"
+  loop_control:
+    loop_var: task_name

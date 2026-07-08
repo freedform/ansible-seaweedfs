@@ -1,0 +1,55 @@
+---
+- name: Validate variables for install.yml task
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_version is defined
+      - seaweedfs_user is defined
+      - seaweedfs_dir is defined
+      - seaweedfs_data_path is defined
+      - seaweedfs_download_url is defined
+      - seaweedfs_download_dir is defined
+      - seaweedfs_bin_dir is defined
+
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ dir_path }}"
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0755"
+  loop:
+    - "{{ seaweedfs_dir }}"
+    - "{{ seaweedfs_data_path }}"
+  loop_control:
+    loop_var: dir_path
+
+- name: Download seaweedfs
+  ansible.builtin.get_url:
+    url: "{{ seaweedfs_download_url }}"
+    dest: "{{ seaweedfs_download_dir }}/seaweedfs.tar.gz"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Extract seaweedfs
+  ansible.builtin.unarchive:
+    src: "{{ seaweedfs_download_dir }}/seaweedfs.tar.gz"
+    dest: "{{ seaweedfs_download_dir }}"
+    remote_src: true
+
+- name: Install binary
+  ansible.builtin.copy:
+    src: "{{ seaweedfs_download_dir }}/weed"
+    dest: "{{ seaweedfs_bin_dir }}/weed"
+    mode: "0755"
+    remote_src: true
+
+- name: Delete installation artifacts
+  ansible.builtin.file:
+    name: "{{ artifact_path }}"
+    state: absent
+  loop:
+    - "{{ seaweedfs_download_dir }}/seaweedfs.tar.gz"
+    - "{{ seaweedfs_download_dir }}/weed"
+  loop_control:
+    loop_var: artifact_path
