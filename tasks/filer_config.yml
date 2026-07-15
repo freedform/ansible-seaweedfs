@@ -1,0 +1,5 @@
+---
+# TODO: implement filer_config action
+- name: TODO implement filer_config
+  ansible.builtin.debug:
+    msg: "filer_config not yet implemented"

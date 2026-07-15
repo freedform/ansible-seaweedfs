@@ -1,0 +1,5 @@
+---
+# TODO: implement master_config action
+- name: TODO implement master_config
+  ansible.builtin.debug:
+    msg: "master_config not yet implemented"

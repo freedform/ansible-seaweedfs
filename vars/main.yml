@@ -1,4 +1,13 @@
 seaweedfs_supported_actions:
   - install
+  - disk_init
+  - master_config
+  - master_state
+  - volume_config
+  - volume_state
+  - filer_config
+  - filer_state
+  - s3_config
+  - s3_state
 
 seaweedfs_download_url: "{{ seaweedfs_download_base }}/{{ seaweedfs_version }}/linux_amd64.tar.gz"

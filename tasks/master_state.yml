@@ -1,0 +1,5 @@
+---
+# TODO: implement master_state action
+- name: TODO implement master_state
+  ansible.builtin.debug:
+    msg: "master_state not yet implemented"

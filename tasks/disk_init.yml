@@ -1,0 +1,51 @@
+---
+- name: Validate variables for disk_init.yml task
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_config is defined
+      - seaweedfs_config.volume_config is defined
+      - seaweedfs_config.volume_config.volumes is defined
+      - seaweedfs_config.volume_config.volumes | length > 0
+
+- name: Create disk label and partition
+  # seaweedfs volumes always consume the entire block device as a single partition.
+  community.general.parted:
+    device: "{{ volume.block_device }}"
+    label: "{{ volume.label }}"
+    number: 1
+    part_start: 0%
+    part_end: 100%
+    state: present
+  loop: "{{ seaweedfs_config.volume_config.volumes }}"
+  loop_control:
+    loop_var: volume
+
+- name: Format partition
+  community.general.filesystem:
+    dev: "{{ volume.block_device }}{{ 'p1' if volume.block_device is match('.*[0-9]$') else '1' }}"
+    fstype: "{{ volume.file_system }}"
+  loop: "{{ seaweedfs_config.volume_config.volumes }}"
+  loop_control:
+    loop_var: volume
+
+- name: Create mount directories
+  ansible.builtin.file:
+    path: "{{ volume.mount_dir }}"
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0755"
+  loop: "{{ seaweedfs_config.volume_config.volumes }}"
+  loop_control:
+    loop_var: volume
+
+- name: Mount partitions
+  ansible.posix.mount:
+    path: "{{ volume.mount_dir }}"
+    src: "{{ volume.block_device }}{{ 'p1' if volume.block_device is match('.*[0-9]$') else '1' }}"
+    fstype: "{{ volume.file_system }}"
+    opts: "{{ volume.mount_options }}"
+    state: mounted
+  loop: "{{ seaweedfs_config.volume_config.volumes }}"
+  loop_control:
+    loop_var: volume

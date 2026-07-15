@@ -1,0 +1,5 @@
+---
+# TODO: implement s3_config action
+- name: TODO implement s3_config
+  ansible.builtin.debug:
+    msg: "s3_config not yet implemented"

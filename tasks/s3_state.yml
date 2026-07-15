@@ -1,0 +1,5 @@
+---
+# TODO: implement s3_state action
+- name: TODO implement s3_state
+  ansible.builtin.debug:
+    msg: "s3_state not yet implemented"

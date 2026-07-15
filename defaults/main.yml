@@ -5,6 +5,34 @@
 # @var seaweedfs_actions:type: String
 # @var seaweedfs_actions:example: >
 #   seaweedfs_actions: install
+#   seaweedfs_actions: install,disk_init
+# @end
+
+# @var seaweedfs_config:description: >
+# Nested configuration for seaweedfs components. Only the keys required by the
+# requested seaweedfs_actions need to be populated.
+# `volume_config.volumes` is a list of disks to prepare, each with:
+# `block_device` (e.g. /dev/sdb), `label` (disk label type, e.g. gpt), `file_system`
+# (e.g. ext4), `mount_dir` (mount point) and `mount_options` (comma-separated
+# fstab options, e.g. defaults,noatime). Each block_device is consumed entirely
+# as a single partition (100%) - seaweedfs volumes do not share disks. Required
+# only when seaweedfs_actions includes `disk_init`.
+# @var seaweedfs_config:required: `true`, only for the sub-keys used by the requested actions
+# @var seaweedfs_config:type: Dict
+# @var seaweedfs_config:example: $>
+# {
+#   "volume_config": {
+#     "volumes": [
+#       {
+#         "block_device": "/dev/sdb",
+#         "label": "gpt",
+#         "file_system": "ext4",
+#         "mount_dir": "/mnt/seaweedfs/disk1",
+#         "mount_options": "defaults,noatime"
+#       }
+#     ]
+#   }
+# }
 # @end
 
 # @var seaweedfs_version:description: SeaweedFS release version to install (without leading "v")
