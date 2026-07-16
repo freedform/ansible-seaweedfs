@@ -1,5 +1,0 @@
----
-# TODO: implement volume_state action
-- name: TODO implement volume_state
-  ansible.builtin.debug:
-    msg: "volume_state not yet implemented"

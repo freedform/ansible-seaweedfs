@@ -1,5 +1,50 @@
 ---
-# TODO: implement master_config action
-- name: TODO implement master_config
-  ansible.builtin.debug:
-    msg: "master_config not yet implemented"
+- name: Validate variables for master_config.yml task
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_master_config is defined
+      - seaweedfs_master_config.weed_parameters is defined
+      - seaweedfs_master_config.weed_parameters.ip is defined
+
+- name: Create master data directory
+  ansible.builtin.file:
+    path: "{{ seaweedfs_master_dir }}"
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0755"
+
+- name: Create seaweedfs config directory
+  ansible.builtin.file:
+    path: "{{ seaweedfs_config_dir }}"
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0755"
+
+- name: Create seaweedfs-master options file
+  ansible.builtin.template:
+    src: seaweedfs-options.conf.j2
+    dest: "{{ seaweedfs_config_dir }}/master.conf"
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0644"
+  vars:
+    weed_parameters: "{{ {'mdir': seaweedfs_master_dir} | combine(seaweedfs_master_config.weed_parameters) }}"
+
+- name: Create seaweedfs-master systemd unit
+  ansible.builtin.template:
+    src: seaweedfs-master.service.j2
+    dest: /etc/systemd/system/seaweedfs-master.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable seaweedfs-master service
+  ansible.builtin.service:
+    name: seaweedfs-master
+    enabled: true

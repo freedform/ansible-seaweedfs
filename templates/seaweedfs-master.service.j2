@@ -1,0 +1,15 @@
+[Unit]
+Description=SeaweedFS Master
+After=network.target
+
+[Service]
+Type=simple
+User={{ seaweedfs_user }}
+Group={{ seaweedfs_user }}
+ExecStart={{ seaweedfs_bin_dir }}/weed master -options={{ seaweedfs_config_dir }}/master.conf
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

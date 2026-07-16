@@ -1,0 +1,17 @@
+[Unit]
+Description=SeaweedFS Filer
+After=network.target seaweedfs-master.service
+Requires=seaweedfs-master.service
+
+[Service]
+Type=simple
+User={{ seaweedfs_user }}
+Group={{ seaweedfs_user }}
+WorkingDirectory={{ seaweedfs_filer_dir }}
+ExecStart={{ seaweedfs_bin_dir }}/weed filer -options={{ seaweedfs_config_dir }}/filer.conf
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=SeaweedFS Volume ({{ volume.mount_dir }})
+After=network.target seaweedfs-master.service
+Requires=seaweedfs-master.service
+
+[Service]
+Type=simple
+User={{ seaweedfs_user }}
+Group={{ seaweedfs_user }}
+ExecStart={{ seaweedfs_bin_dir }}/weed volume -options={{ seaweedfs_config_dir }}/volume-{{ volume.mount_dir }}.conf
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

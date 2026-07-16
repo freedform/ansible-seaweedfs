@@ -2,12 +2,26 @@ seaweedfs_supported_actions:
   - install
   - disk_init
   - master_config
-  - master_state
   - volume_config
-  - volume_state
   - filer_config
-  - filer_state
   - s3_config
-  - s3_state
+  - filer_sync_config
+  - component_state
+
+seaweedfs_supported_states:
+  - started
+  - stopped
+  - restarted
+
+seaweedfs_supported_components:
+  - master
+  - volume
+  - filer
+  - s3
+  - filer_sync
+
+seaweedfs_master_dir: "{{ seaweedfs_dir }}/master"
+seaweedfs_volume_dir: "{{ seaweedfs_dir }}/volumes"
+seaweedfs_filer_dir: "{{ seaweedfs_dir }}/filers"
 
 seaweedfs_download_url: "{{ seaweedfs_download_base }}/{{ seaweedfs_version }}/linux_amd64.tar.gz"

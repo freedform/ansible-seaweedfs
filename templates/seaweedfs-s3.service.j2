@@ -1,0 +1,16 @@
+[Unit]
+Description=SeaweedFS S3 Gateway
+After=network.target seaweedfs-filer.service
+Requires=seaweedfs-filer.service
+
+[Service]
+Type=simple
+User={{ seaweedfs_user }}
+Group={{ seaweedfs_user }}
+ExecStart={{ seaweedfs_bin_dir }}/weed s3 -options={{ seaweedfs_config_dir }}/s3-options.conf
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

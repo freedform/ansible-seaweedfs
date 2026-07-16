@@ -1,5 +1,57 @@
 ---
-# TODO: implement volume_config action
-- name: TODO implement volume_config
-  ansible.builtin.debug:
-    msg: "volume_config not yet implemented"
+- name: Validate variables for volume_config.yml task
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_volume_config is defined
+      - seaweedfs_volume_config.weed_parameters is defined
+      - seaweedfs_volume_config.weed_parameters.ip is defined
+      - seaweedfs_volume_config.weed_parameters.master is defined
+      - seaweedfs_volume_config.volumes is defined
+      - seaweedfs_volume_config.volumes | length > 0
+
+- name: Create seaweedfs config directory
+  ansible.builtin.file:
+    path: "{{ seaweedfs_config_dir }}"
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0755"
+
+- name: Create seaweedfs-volume options files
+  ansible.builtin.template:
+    src: seaweedfs-options.conf.j2
+    dest: "{{ seaweedfs_config_dir }}/volume-{{ volume.mount_dir }}.conf"
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0644"
+  loop: "{{ seaweedfs_volume_config.volumes }}"
+  loop_control:
+    loop_var: volume
+  vars:
+    weed_parameters: >-
+      {{ {'dir': seaweedfs_volume_dir + '/' + volume.mount_dir}
+         | combine(seaweedfs_volume_config.weed_parameters)
+         | combine(volume.weed_parameters | default({})) }}
+
+- name: Create seaweedfs-volume systemd units
+  ansible.builtin.template:
+    src: seaweedfs-volume.service.j2
+    dest: "/etc/systemd/system/seaweedfs-volume-{{ volume.mount_dir }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ seaweedfs_volume_config.volumes }}"
+  loop_control:
+    loop_var: volume
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable seaweedfs-volume services
+  ansible.builtin.service:
+    name: "seaweedfs-volume-{{ volume.mount_dir }}"
+    enabled: true
+  loop: "{{ seaweedfs_volume_config.volumes }}"
+  loop_control:
+    loop_var: volume

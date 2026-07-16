@@ -1,0 +1,43 @@
+---
+- name: Validate variables for filer_sync_config.yml task
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_filer_sync_config is defined
+      - seaweedfs_filer_sync_config.weed_parameters is defined
+      - seaweedfs_filer_sync_config.weed_parameters.a is defined
+      - seaweedfs_filer_sync_config.weed_parameters.b is defined
+
+- name: Create seaweedfs config directory
+  ansible.builtin.file:
+    path: "{{ seaweedfs_config_dir }}"
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0755"
+
+- name: Create seaweedfs-filer-sync options file
+  ansible.builtin.template:
+    src: seaweedfs-options.conf.j2
+    dest: "{{ seaweedfs_config_dir }}/filer-sync.conf"
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0644"
+  vars:
+    weed_parameters: "{{ seaweedfs_filer_sync_config.weed_parameters }}"
+
+- name: Create seaweedfs-filer-sync systemd unit
+  ansible.builtin.template:
+    src: seaweedfs-filer-sync.service.j2
+    dest: /etc/systemd/system/seaweedfs-filer-sync.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable seaweedfs-filer-sync service
+  ansible.builtin.service:
+    name: seaweedfs-filer-sync
+    enabled: true

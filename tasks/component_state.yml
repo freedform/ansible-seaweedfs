@@ -1,0 +1,53 @@
+---
+- name: Create seaweedfs_component_list
+  ansible.builtin.set_fact:
+    seaweedfs_component_list: "{{ (seaweedfs_components | default('')).split(',') | reject('equalto', '') | list }}"
+
+- name: Validate variables for component_state.yml task
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_component_list | length > 0
+      - seaweedfs_component_list | difference(seaweedfs_supported_components) | length == 0
+      - seaweedfs_component_state in seaweedfs_supported_states
+    fail_msg: "seaweedfs_components must be set to one or more of: {{ seaweedfs_supported_components | join(', ') }}"
+
+- name: Validate seaweedfs_volume_config for volume component
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_volume_config is defined
+      - seaweedfs_volume_config.volumes is defined
+      - seaweedfs_volume_config.volumes | length > 0
+  when: "'volume' in seaweedfs_component_list"
+
+- name: Manage seaweedfs-master state
+  ansible.builtin.service:
+    name: seaweedfs-master
+    state: "{{ seaweedfs_component_state }}"
+  when: "'master' in seaweedfs_component_list"
+
+- name: Manage seaweedfs-volume state
+  ansible.builtin.service:
+    name: "seaweedfs-volume-{{ volume.mount_dir }}"
+    state: "{{ seaweedfs_component_state }}"
+  loop: "{{ seaweedfs_volume_config.volumes }}"
+  loop_control:
+    loop_var: volume
+  when: "'volume' in seaweedfs_component_list"
+
+- name: Manage seaweedfs-filer state
+  ansible.builtin.service:
+    name: seaweedfs-filer
+    state: "{{ seaweedfs_component_state }}"
+  when: "'filer' in seaweedfs_component_list"
+
+- name: Manage seaweedfs-filer-sync state
+  ansible.builtin.service:
+    name: seaweedfs-filer-sync
+    state: "{{ seaweedfs_component_state }}"
+  when: "'filer_sync' in seaweedfs_component_list"
+
+- name: Manage seaweedfs-s3 state
+  ansible.builtin.service:
+    name: seaweedfs-s3
+    state: "{{ seaweedfs_component_state }}"
+  when: "'s3' in seaweedfs_component_list"

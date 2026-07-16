@@ -1,5 +1,51 @@
 ---
-# TODO: implement filer_config action
-- name: TODO implement filer_config
-  ansible.builtin.debug:
-    msg: "filer_config not yet implemented"
+- name: Validate variables for filer_config.yml task
+  ansible.builtin.assert:
+    that:
+      - seaweedfs_filer_config is defined
+      - seaweedfs_filer_config.weed_parameters is defined
+      - seaweedfs_filer_config.weed_parameters.ip is defined
+      - seaweedfs_filer_config.weed_parameters.master is defined
+
+- name: Create filer working directory
+  ansible.builtin.file:
+    path: "{{ seaweedfs_filer_dir }}"
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0755"
+
+- name: Create seaweedfs config directory
+  ansible.builtin.file:
+    path: "{{ seaweedfs_config_dir }}"
+    state: directory
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0755"
+
+- name: Create seaweedfs-filer options file
+  ansible.builtin.template:
+    src: seaweedfs-options.conf.j2
+    dest: "{{ seaweedfs_config_dir }}/filer.conf"
+    owner: "{{ seaweedfs_user }}"
+    group: "{{ seaweedfs_user }}"
+    mode: "0644"
+  vars:
+    weed_parameters: "{{ seaweedfs_filer_config.weed_parameters }}"
+
+- name: Create seaweedfs-filer systemd unit
+  ansible.builtin.template:
+    src: seaweedfs-filer.service.j2
+    dest: /etc/systemd/system/seaweedfs-filer.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable seaweedfs-filer service
+  ansible.builtin.service:
+    name: seaweedfs-filer
+    enabled: true

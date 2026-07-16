@@ -5,23 +5,34 @@
       - seaweedfs_version is defined
       - seaweedfs_user is defined
       - seaweedfs_dir is defined
-      - seaweedfs_data_path is defined
       - seaweedfs_download_url is defined
       - seaweedfs_download_dir is defined
       - seaweedfs_bin_dir is defined
 
-- name: Create directories
+- name: Create seaweedfs base directory
   ansible.builtin.file:
-    path: "{{ dir_path }}"
+    path: "{{ seaweedfs_dir }}"
     state: directory
     owner: "{{ seaweedfs_user }}"
     group: "{{ seaweedfs_user }}"
     mode: "0755"
-  loop:
-    - "{{ seaweedfs_dir }}"
-    - "{{ seaweedfs_data_path }}"
-  loop_control:
-    loop_var: dir_path
+
+- name: Check for existing weed binary
+  ansible.builtin.stat:
+    path: "{{ seaweedfs_bin_dir }}/weed"
+  register: seaweedfs_existing_binary
+
+- name: Check installed weed version
+  ansible.builtin.command: "{{ seaweedfs_bin_dir }}/weed version"
+  register: seaweedfs_installed_version
+  changed_when: false
+  when: seaweedfs_existing_binary.stat.exists
+
+- name: Determine whether seaweedfs needs (re)installing
+  ansible.builtin.set_fact:
+    seaweedfs_needs_install: >-
+      {{ not seaweedfs_existing_binary.stat.exists
+         or seaweedfs_installed_version.stdout.split()[2] != seaweedfs_version | string }}
 
 - name: Download seaweedfs
   ansible.builtin.get_url:
@@ -30,12 +41,14 @@
     owner: root
     group: root
     mode: "0644"
+  when: seaweedfs_needs_install
 
 - name: Extract seaweedfs
   ansible.builtin.unarchive:
     src: "{{ seaweedfs_download_dir }}/seaweedfs.tar.gz"
     dest: "{{ seaweedfs_download_dir }}"
     remote_src: true
+  when: seaweedfs_needs_install
 
 - name: Install binary
   ansible.builtin.copy:
@@ -43,6 +56,7 @@
     dest: "{{ seaweedfs_bin_dir }}/weed"
     mode: "0755"
     remote_src: true
+  when: seaweedfs_needs_install
 
 - name: Delete installation artifacts
   ansible.builtin.file:
@@ -53,3 +67,4 @@
     - "{{ seaweedfs_download_dir }}/weed"
   loop_control:
     loop_var: artifact_path
+  when: seaweedfs_needs_install

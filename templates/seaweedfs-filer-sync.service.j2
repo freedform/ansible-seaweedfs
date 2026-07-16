@@ -1,0 +1,17 @@
+[Unit]
+Description=SeaweedFS Filer Sync
+After=network.target seaweedfs-filer.service
+Requires=seaweedfs-filer.service
+
+[Service]
+Type=simple
+User={{ seaweedfs_user }}
+Group={{ seaweedfs_user }}
+WorkingDirectory={{ seaweedfs_filer_dir }}
+ExecStart={{ seaweedfs_bin_dir }}/weed filer.sync -options={{ seaweedfs_config_dir }}/filer-sync.conf
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
